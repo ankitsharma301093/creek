@@ -51,7 +51,7 @@ module Creek
     # Provides an Enumerator that returns a hash representing each row.
     # The key of the hash is the column ID and the value is the value of the cell.
     def simple_rows(options={})
-      rows_generator false, true
+      rows_generator false, true, options
     end
 
     ##
@@ -72,7 +72,7 @@ module Creek
     # Provides an Enumerator that returns a hash representing each row.
     # The hash contains meta data of the row and a 'cells' embended hash which contains the cell contents.
     def simple_rows_with_meta_data(options={})
-      rows_generator true, true
+      rows_generator true, true, options
     end
 
     private
