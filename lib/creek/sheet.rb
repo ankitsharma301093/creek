@@ -50,7 +50,7 @@ module Creek
     ##
     # Provides an Enumerator that returns a hash representing each row.
     # The key of the hash is the column ID and the value is the value of the cell.
-    def simple_rows
+    def simple_rows(options={})
       rows_generator false, true
     end
 
@@ -71,7 +71,7 @@ module Creek
     ##
     # Provides an Enumerator that returns a hash representing each row.
     # The hash contains meta data of the row and a 'cells' embended hash which contains the cell contents.
-    def simple_rows_with_meta_data
+    def simple_rows_with_meta_data(options={})
       rows_generator true, true
     end
 
@@ -80,7 +80,7 @@ module Creek
     ##
     # Returns a hash per row that includes the cell ids and values.
     # Empty cells will be also included in the hash with a nil value.
-    def rows_generator include_meta_data=false, use_simple_rows_format=false
+    def rows_generator include_meta_data=false, use_simple_rows_format=false, cell_type_options={}
       path = if @sheetfile.start_with? "/xl/" or @sheetfile.start_with? "xl/" then @sheetfile else "xl/#{@sheetfile}" end
       if @book.files.file.exist?(path)
         # SAX parsing, Each element in the stream comes through as two events:
@@ -111,9 +111,10 @@ module Creek
                 row['cells'] = processed_cells
                 y << (include_meta_data ? row : processed_cells)
               elsif (node.name.eql? 'c') and (node.node_type.eql? opener)
-                cell_type      = node.attributes['t']
-                cell_style_idx = node.attributes['s']
+                # cell_type      = node.attributes['t']
                 cell           = node.attributes['r']
+                cell_type      = (cell == cell.tr("0-9", "")+"1") ? node.attributes['t'] : cell_type_options[cell.tr("0-9", "")] || node.attributes['t']
+                cell_style_idx = node.attributes['s']
               elsif (['v', 't'].include? node.name) and (node.node_type.eql? opener)
                 unless cell.nil?
                   node.read
